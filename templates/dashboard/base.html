@@ -1,0 +1,696 @@
+{% load static %} {% load dashboard_filters %}
+<!doctype html>
+<html lang="en" class="enhanced-theme">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CyTrack - Cyber Threat Intelligence</title>
+        <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        />
+        <link rel="stylesheet" href="{% static 'style.css' %}" />
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Mouse move glow effect
+                document.addEventListener("mousemove", (e) => {
+                    requestAnimationFrame(() => {
+                        document.documentElement.style.setProperty(
+                            "--mouse-x",
+                            e.clientX + "px",
+                        );
+                        document.documentElement.style.setProperty(
+                            "--mouse-y",
+                            e.clientY + "px",
+                        );
+                    });
+                });
+
+                // Scroll-based background transition
+                const backgroundPrimary = document.querySelector(
+                    ".background-primary",
+                );
+                const backgroundSecondary = document.querySelector(
+                    ".background-secondary",
+                );
+
+                window.addEventListener("scroll", () => {
+                    requestAnimationFrame(() => {
+                        const scrollPercent = Math.min(
+                            window.scrollY /
+                                (document.documentElement.scrollHeight -
+                                    window.innerHeight),
+                            1,
+                        );
+                        backgroundPrimary.style.opacity = 1 - scrollPercent;
+                        backgroundSecondary.style.opacity = scrollPercent;
+                    });
+                });
+
+                // Scroll reveal effect
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: "0px 0px -50px 0px",
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("visible");
+                        }
+                    });
+                }, observerOptions);
+
+                document
+                    .querySelectorAll(".scroll-reveal")
+                    .forEach((el) => observer.observe(el));
+
+                // Parallax effect
+                let ticking = false;
+                window.addEventListener("scroll", () => {
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            document
+                                .querySelectorAll(".parallax")
+                                .forEach((el) => {
+                                    const speed = el.dataset.speed || 0.5;
+                                    const yPos = -(window.scrollY * speed);
+                                    el.style.transform = `translateY(${yPos}px)`;
+                                });
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                });
+            });
+        </script>
+        <style>
+            :root {
+                --primary-color: #00ffcc;
+                --bg-dark: #0d1117;
+                --bg-darker: #090c10;
+                --text-primary: #e0e0e0;
+                --text-secondary: #888;
+                --accent-gradient: linear-gradient(45deg, #00ffcc, #3498db);
+                --glow-color: rgba(0, 255, 204, 0.15);
+                --glow-spread-color: rgba(52, 152, 219, 0.15);
+                --enhanced-glow: 0 0 25px var(--glow-color);
+                --transition-speed: 0.5s;
+                --scroll-transition: all 0.3s ease-out;
+                --overlay-color-primary: rgba(13, 17, 23, 0.75);
+                --overlay-color-secondary: rgba(9, 12, 16, 0.9);
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                color: var(--text-primary);
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                overflow-x: hidden;
+            }
+
+            .background-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -1;
+            }
+
+            .background-layer {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                transition: opacity var(--transition-speed) ease-in-out;
+            }
+
+            .background-primary {
+                background-image:
+                    linear-gradient(
+                        var(--overlay-color-primary),
+                        var(--overlay-color-secondary)
+                    ),
+                    url("https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1920&q=500");
+                opacity: 1;
+            }
+
+            .background-secondary {
+                background-image:
+                    linear-gradient(
+                        var(--overlay-color-primary),
+                        var(--overlay-color-secondary)
+                    ),
+                    url("https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1920&q=80");
+                opacity: 1;
+            }
+
+            /* Dynamic glow effect */
+            .glow-effect {
+                content: "";
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: radial-gradient(
+                    circle at var(--mouse-x, center) var(--mouse-y, center),
+                    rgba(0, 255, 204, 0.15) 0%,
+                    rgba(52, 152, 219, 0.1) 25%,
+                    transparent 50%
+                );
+                pointer-events: none;
+                z-index: 1;
+                transition: var(--scroll-transition);
+            }
+
+            /* Scroll-based effects */
+            .scroll-reveal {
+                opacity: 0;
+                transform: translateY(20px);
+                transition: var(--scroll-transition);
+            }
+
+            .scroll-reveal.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            /* Parallax effect */
+            .parallax {
+                transform: translateY(0);
+                transition: transform 0.1s ease-out;
+                will-change: transform;
+            }
+
+            /* Ensure content appears above the glow effect */
+            body > *:not(.background-container) {
+                position: relative;
+                z-index: 2;
+            }
+
+            /* Smooth transition for all animated elements */
+            .animated {
+                transition: var(--scroll-transition);
+            }
+
+            /* Color pulse animation for accent elements */
+            @keyframes colorPulse {
+                0% {
+                    filter: hue-rotate(0deg);
+                }
+                50% {
+                    filter: hue-rotate(30deg);
+                }
+                100% {
+                    filter: hue-rotate(0deg);
+                }
+            }
+
+            .accent-pulse {
+                animation: colorPulse 8s infinite;
+            }
+
+            /* Navbar Styling */
+            .navbar {
+                background-color: var(--bg-darker) !important;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 1rem 2rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: var(--primary-color) !important;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .navbar-brand i {
+                font-size: 1.8rem;
+            }
+
+            .nav-item {
+                margin: 0 0.5rem;
+            }
+
+            .nav-link {
+                color: var(--text-primary) !important;
+                font-weight: 500;
+                padding: 0.5rem 1rem;
+                border-radius: 5px;
+                transition: all 0.3s ease;
+            }
+
+            .nav-link:hover {
+                color: var(--primary-color) !important;
+                background: rgba(0, 255, 204, 0.1);
+            }
+
+            .nav-link.active {
+                background: var(--accent-gradient);
+                color: var(--bg-darker) !important;
+            }
+
+            /* Hero Section */
+            .hero-section {
+                padding: 6rem 2rem;
+                display: flex;
+                min-height: 90vh;
+                align-items: center;
+                text-align: center;
+                background:
+                    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.85)),
+                    url("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=700");
+                background-size: cover;
+                background-position: center;
+                position: relative;
+                overflow: hidden;
+                box-shadow:
+                    inset 0 0 100px rgba(0, 255, 204, 0.2),
+                    0 0 50px rgba(0, 255, 204, 0.1);
+                animation: pulseBackground 8s ease-in-out infinite;
+            }
+
+            .hero-content {
+                max-width: 800px;
+                margin: 0 auto;
+                position: relative;
+                z-index: 2;
+            }
+
+            .hero-title {
+                font-size: 3.5rem;
+                margin-bottom: 1.5rem;
+                background: linear-gradient(45deg, #00ffcc, #3498db);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            .hero-subtitle {
+                font-size: 1.5rem;
+                color: var(--text-primary);
+                margin-bottom: 2rem;
+            }
+
+            .feature-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+                padding: 4rem 2rem;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .feature-card {
+                background: rgba(22, 27, 34, 0.8);
+                border-radius: 15px;
+                padding: 2rem;
+                text-align: center;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                transition: transform 0.3s ease;
+            }
+
+            .feature-card:hover {
+                transform: translateY(-10px);
+            }
+
+            .feature-icon {
+                font-size: 2.5rem;
+                color: var(--primary-color);
+                margin-bottom: 1rem;
+            }
+
+            .feature-title {
+                color: #fff;
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .feature-description {
+                color: var(--text-secondary);
+                line-height: 1.6;
+            }
+
+            .cta-button {
+                display: inline-block;
+                padding: 1rem 2rem;
+                background: var(--accent-gradient);
+                color: var(--bg-darker);
+                text-decoration: none;
+                border-radius: 25px;
+                font-weight: bold;
+                transition: all 0.3s ease;
+            }
+
+            .cta-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 255, 204, 0.3);
+                text-decoration: none;
+                color: var(--bg-darker);
+            }
+
+            /* Stats Section */
+            .stats-section {
+                padding-top: 20px;     /* ↓ reduce this */
+                padding-bottom: 20px;  /* ↓ reduce this */
+                margin: 0 auto;
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr); 
+                gap: 2rem;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .stat-card {
+                background: rgba(22, 27, 34, 0.8);
+                border-radius: 15px;
+                padding: 8px 16px;
+                text-align: center;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 10px 20px;    /* ↓ reduce vertical padding */
+                margin: 4px 10px;
+            }
+
+            
+
+            .stat-number {
+                font-size: 2.5rem;
+                color: var(--primary-color);
+                margin-bottom: 0.5rem;
+            }
+
+            .stat-label {
+                color: var(--text-secondary);
+            }
+
+            /* Footer */
+            footer {
+                background-color: var(--bg-darker);
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 2rem;
+                margin-top: auto;
+            }
+
+            .footer-content {
+                max-width: 1200px;
+                margin: 0 auto;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+            }
+
+            .footer-section h3 {
+                color: var(--primary-color);
+                margin-bottom: 1rem;
+            }
+
+            .footer-section p,
+            .footer-section a {
+                color: var(--text-secondary);
+            }
+
+            .footer-section a:hover {
+                color: var(--primary-color);
+                text-decoration: none;
+            }
+
+            .social-links {
+                display: flex;
+                gap: 1rem;
+            }
+
+            .social-links a {
+                color: var(--text-secondary);
+                font-size: 1.5rem;
+                transition: color 0.3s ease;
+            }
+
+            .social-links a:hover {
+                color: var(--primary-color);
+            }
+
+            /* Floating Elements Animation */
+            .floating-elements {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                z-index: 1;
+            }
+
+            .floating-element {
+                position: absolute;
+                background: rgba(0, 255, 204, 0.1);
+                border-radius: 50%;
+                pointer-events: none;
+                animation: float 15s infinite linear;
+            }
+
+            @keyframes float {
+                0% {
+                    transform: translateY(0) rotate(0deg);
+                }
+                100% {
+                    transform: translateY(-100vh) rotate(360deg);
+                }
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .hero-title {
+                    font-size: 2.5rem;
+                }
+
+                .hero-subtitle {
+                    font-size: 1.2rem;
+                }
+
+                .feature-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            @keyframes pulseBackground {
+                0% {
+                    background-color: rgba(13, 17, 23, 0.95);
+                }
+                50% {
+                    background-color: rgba(0, 255, 204, 0.05);
+                }
+                100% {
+                    background-color: rgba(13, 17, 23, 0.95);
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg">
+            <a class="navbar-brand" href="{% url 'base' %}">
+                <i class="fas fa-shield-alt"></i>
+                CyTrack
+            </a>
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-toggle="collapse"
+                data-target="#navbarNav"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a
+                            class="nav-link {% if request.path == '/' %}active{% endif %}"
+                            href="{% url 'base' %}"
+                        >
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a
+                            class="nav-link {% if 'dashboard' in request.path %}active{% endif %}"
+                            href="{% url 'dashboard' %}"
+                        >
+                            <i class="fas fa-compass"></i> Explore
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a
+                            class="nav-link {% if 'about' in request.path %}active{% endif %}"
+                            href="{% url 'about' %}"
+                        >
+                            <i class="fas fa-info-circle"></i> About
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a
+                            class="nav-link {% if 'contact' in request.path %}active{% endif %}"
+                            href="{% url 'contact' %}"
+                        >
+                            <i class="fas fa-envelope"></i> Contact
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="ml-auto d-flex align-items-center">
+                    <a href="{% url 'dashboard' %}" class="cta-button">
+                        Launch Dashboard
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        {% if request.path == '/' %}
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="floating-elements">
+                {% for i in '123456'|make_list %}
+                <div
+                    class="floating-element"
+                    style="left: {{ forloop.counter|multiply:15 }}%;
+                            width: {{ forloop.counter|multiply:20 }}px;
+                            height: {{ forloop.counter|multiply:20 }}px;
+                            animation-delay: -{{ forloop.counter }}s;"
+                ></div>
+                {% endfor %}
+            </div>
+            <div class="hero-content">
+                <h1 class="hero-title">Global Cyber Threat Intelligence</h1>
+                <p class="hero-subtitle">
+                    Stay ahead of cyber threats with real-time monitoring and
+                    advanced analytics
+                </p>
+                <a href="{% url 'dashboard' %}" class="cta-button">
+                    Explore Dashboard <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <h3 class="feature-title">Global Coverage</h3>
+                <p class="feature-description">
+                    Monitor cyber threats across the globe with our
+                    comprehensive threat intelligence network
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="feature-title">Real-time Analytics</h3>
+                <p class="feature-description">
+                    Get instant insights with advanced analytics and
+                    visualization tools
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="feature-title">Threat Prevention</h3>
+                <p class="feature-description">
+                    Identify and prevent cyber threats before they impact your
+                    organization
+                </p>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">Countries Monitored</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Real-time Monitoring</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Accuracy Rate</div>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Main Content -->
+        <!-- Background container -->
+        <div class="background-container">
+            <div class="background-layer background-primary"></div>
+            <div class="background-layer background-secondary"></div>
+            <div class="glow-effect"></div>
+        </div>
+
+        <div class="main-content">{% block content %}{% endblock %}</div>
+
+        <!-- Footer -->
+        <footer class="scroll-reveal">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>About CyTrack</h3>
+                    <p>
+                        Leading the way in cyber threat intelligence with
+                        advanced analytics and real-time monitoring.
+                    </p>
+                </div>
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <p><a href="{% url 'base' %}">Home</a></p>
+                    <p><a href="{% url 'dashboard' %}">Dashboard</a></p>
+                    <p><a href="#">Documentation</a></p>
+                    <p><a href="#">API Access</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="https://github.com/PamJoshi"><i class="fab fa-github"></i></a>
+                        <a href="https://www.linkedin.com/in/pamjoshi/"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://x.com/joshi_param1312"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.instagram.com/joshi_param1312/"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    </body>
+</html>

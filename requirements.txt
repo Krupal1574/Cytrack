@@ -1,0 +1,64 @@
+﻿# ============================================================
+# CyTrack — Python Dependencies
+# Python 3.14+ compatible versions
+# ============================================================
+
+# --- Core Django ---
+Django==5.1.1
+psycopg2-binary==2.9.12
+
+# --- REST API ---
+djangorestframework==3.15.2
+djangorestframework-simplejwt==5.3.1
+drf-spectacular==0.27.2
+django-filter==24.3
+django-cors-headers==4.4.0
+
+# --- Authentication ---
+django-allauth==65.18.0
+
+# --- Real-time (WebSocket) ---
+channels==4.3.2
+channels-redis==4.2.0
+
+# --- Task Queue ---
+celery==5.6.3
+django-celery-beat==2.7.0
+django-celery-results==2.5.1
+
+# --- Caching / Broker ---
+redis==5.1.1
+django-redis==5.4.0
+
+# --- Threat Intelligence Sources ---
+requests==2.32.3
+python-dotenv==1.0.1
+
+# --- Geo and Visualization (existing) ---
+folium==0.17.0
+geopy==2.4.1
+iso3166==2.1.1
+
+# --- Data Processing (Python 3.14 compatible) ---
+pandas>=3.0.0
+numpy>=2.2.0
+matplotlib>=3.9.0
+Pillow>=10.4.0
+
+# --- Production Server ---
+gunicorn==23.0.0
+uvicorn[standard]>=0.30.0
+whitenoise==6.7.0
+
+# --- Dev and Testing ---
+pytest==8.3.3
+pytest-django==4.9.0
+pytest-cov==5.0.0
+coverage==7.6.1
+factory-boy==3.3.1
+faker==30.3.0
+
+# --- Code Quality ---
+flake8==7.1.1
+black==24.8.0
+isort==5.13.2
