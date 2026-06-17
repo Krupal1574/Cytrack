@@ -4,10 +4,37 @@
     <div class="hero-section">
         <h1 class="main-title">Global Cyber Threat Intelligence</h1>
     </div>
- 
 </div>
 
-
+    <!-- KPI Cards -->
+    <div class="stats-section">
+        <div class="stats-grid" id="intel-stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="stat-total-iocs">
+                    <span class="kpi-loading">—</span>
+                </div>
+                <div class="stat-label">Total IOCs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-recent-iocs">
+                    <span class="kpi-loading">—</span>
+                </div>
+                <div class="stat-label">Recent IOCs (30d)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number text-danger" id="stat-high-threats">
+                    <span class="kpi-loading">—</span>
+                </div>
+                <div class="stat-label">High Threat Actors</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number text-warning" id="stat-kev-vulns">
+                    <span class="kpi-loading">—</span>
+                </div>
+                <div class="stat-label">CISA KEV Vulnerabilities</div>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Visualization Section -->
     <div class="visualization-sections">
@@ -15,19 +42,12 @@
         <div class="heatmap-container">
             <div class="visualization-header">
                 <h2>
-                    <i class="fas fa-map-marked-alt"></i> Global Cyber Threat
-                    Heatmap
+                    <i class="fas fa-map-marked-alt"></i> Global Cyber Threat Heatmap
                 </h2>
                 <div class="map-controls">
-                    <button class="control-btn" id="zoomIn">
-                        <i class="fas fa-search-plus"></i>
-                    </button>
-                    <button class="control-btn" id="zoomOut">
-                        <i class="fas fa-search-minus"></i>
-                    </button>
-                    <button class="control-btn" id="resetView">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
+                    <button class="control-btn" id="zoomIn"><i class="fas fa-search-plus"></i></button>
+                    <button class="control-btn" id="zoomOut"><i class="fas fa-search-minus"></i></button>
+                    <button class="control-btn" id="resetView"><i class="fas fa-sync-alt"></i></button>
                 </div>
             </div>
             {% if heatmap_filename %}
@@ -44,69 +64,90 @@
             </div>
             {% endif %}
         </div>
-        <!-- Debug Info Section -->
-<details class="mb-5">
-  <summary><strong>Debug Info</strong></summary>
-  <div class="mt-3 debug-box">
-    <pre><code class="language-json">{{ debug_info_pretty|safe }}</code></pre>
-  </div>
-</details>
 
-        <!-- Historical Trend Analysis -->
-        <div class="trend-analysis">
+        <!-- Chart.js Visualizations Grid -->
+        <div class="charts-grid">
+
+            <!-- Chart 1: IOC Trend Line -->
             <div class="trend-card">
                 <div class="card-header">
-                    <h3>
-                        <i class="fas fa-chart-area"></i> Historical Attack
-                        Patterns (2005-2024)
-                    </h3>
+                    <h3><i class="fas fa-chart-area"></i> IOC Detections (30d)</h3>
                 </div>
                 <div class="trend-content">
-                    <img
-                        src="{% static 'plots/cyber_attack_trend_2005_2024_extended.png' %}"
-                        alt="Cyber Attack Trends"
-                        class="trend-image"
-                    />
+                    <canvas id="chart-ioc-trend" aria-label="IOC daily trend chart"></canvas>
+                    <div class="chart-placeholder" id="placeholder-ioc-trend">Loading…</div>
                 </div>
             </div>
 
+            <!-- Chart 2: Severity Distribution Donut -->
             <div class="trend-card">
                 <div class="card-header">
-                    <h3>
-                        <i class="fas fa-chart-bar"></i> Recent Attack
-                        Distribution
-                    </h3>
+                    <h3><i class="fas fa-exclamation-triangle"></i> IOC Severity Distribution</h3>
                 </div>
-                <div class="trend-content">
-                    <img
-                        src="{{ bar_chart }}"
-                        alt="Attack Types Distribution"
-                        class="trend-image"
-                    />
+                <div class="trend-content chart-center">
+                    <canvas id="chart-severity" aria-label="IOC severity distribution chart"></canvas>
+                    <div class="chart-placeholder" id="placeholder-severity">Loading…</div>
                 </div>
             </div>
+
+            <!-- Chart 3: IOC Type Bar -->
+            <div class="trend-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-chart-bar"></i> IOC Type Distribution</h3>
+                </div>
+                <div class="trend-content">
+                    <canvas id="chart-ioc-type" aria-label="IOC type distribution chart"></canvas>
+                    <div class="chart-placeholder" id="placeholder-ioc-type">Loading…</div>
+                </div>
+            </div>
+
+            <!-- Chart 4: Source Coverage -->
+            <div class="trend-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-database"></i> Source Coverage</h3>
+                </div>
+                <div class="trend-content">
+                    <canvas id="chart-source" aria-label="Source coverage chart"></canvas>
+                    <div class="chart-placeholder" id="placeholder-source">Loading…</div>
+                </div>
+            </div>
+
+            <!-- Chart 5: Top Threat Actors -->
+            <div class="trend-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-user-secret"></i> Top Threat Actors</h3>
+                </div>
+                <div class="trend-content">
+                    <canvas id="chart-actors" aria-label="Top threat actors chart"></canvas>
+                    <div class="chart-placeholder" id="placeholder-actors">Loading…</div>
+                </div>
+            </div>
+
+            <!-- Chart 6: Risk Distribution -->
+            <div class="trend-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-shield-alt"></i> Risk Score Distribution</h3>
+                </div>
+                <div class="trend-content">
+                    <canvas id="chart-risk" aria-label="Risk score distribution chart"></canvas>
+                    <div class="chart-placeholder" id="placeholder-risk">Loading…</div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <!-- News Feed Section -->
     <div class="news-section">
-        <h2>
-            <i class="fas fa-newspaper"></i> Latest Cyber Security Intelligence
-        </h2>
+        <h2><i class="fas fa-newspaper"></i> Latest Cyber Security Intelligence</h2>
         <div class="news-grid">
             {% for article in newsdata_news %}
             <div class="news-card">
                 <div class="news-header">
                     <h4>{{ article.title }}</h4>
                     <div class="news-meta">
-                        <span
-                            ><i class="far fa-clock"></i> {{ article.pubDate
-                            }}</span
-                        >
-                        <span
-                            ><i class="fas fa-user"></i> {{ article.source
-                            }}</span
-                        >
+                        <span><i class="far fa-clock"></i> {{ article.pubDate }}</span>
+                        <span><i class="fas fa-user"></i> {{ article.source }}</span>
                     </div>
                 </div>
                 {% if article.category %}
@@ -118,34 +159,22 @@
                 {% endif %}
                 <p class="news-description">{{ article.description }}</p>
                 <a href="{{ article.link }}" class="read-more" target="_blank"
-                    >Read More <i class="fas fa-arrow-right"></i
-                ></a>
+                    >Read More <i class="fas fa-arrow-right"></i></a>
             </div>
             {% endfor %}
         </div>
     </div>
-</div>
 
 <style>
+    #intel-stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        margin-bottom: 2rem;
+    }
 
-.debug-box {
-    background-color: #0d1117;      /* Dark background */
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid #1f6feb;
-    max-height: 400px;
-    overflow: auto;
-    font-size: 0.85rem;
-    white-space: pre-wrap;
-  }
-
-  .debug-box pre,
-  .debug-box code {
-    color: #ffffff !important;      /* Force white text */
-    background: transparent !important;
-    font-family: monospace;
-  }
-
+    .kpi-loading {
+        opacity: 0.4;
+        font-size: 1.5rem;
+    }
 
     .dashboard-container {
         max-width: 1800px;
@@ -158,14 +187,10 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: 50px; /* Set a reasonable height */
+        min-height: 50px;
         padding: 1rem;
         margin-bottom: 1rem;
-        background: linear-gradient(
-            145deg,
-          rgba(13, 17, 23, 0.85),
-          rgba(22, 27, 34, 0.85)
-        );
+        background: linear-gradient(145deg, rgba(13, 17, 23, 0.85), rgba(22, 27, 34, 0.85));
         border-radius: 15px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         text-align: center;
@@ -177,11 +202,10 @@
         font-weight: 700;
         background: linear-gradient(45deg, #00ffcc, #3498db);
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
         margin: 0;
     }
-
-
 
     .visualization-sections {
         display: flex;
@@ -198,13 +222,6 @@
         max-width: 100%;
         margin-bottom: 1rem;
     }
-    #heatmapFrame {
-        width: 100%;
-        height: 100%;
-        border: none;
-        transform-origin: center center;
-        transition: transform 0.3s ease;
-    }
 
     .visualization-header {
         display: flex;
@@ -219,10 +236,7 @@
         margin: 0;
     }
 
-    .map-controls {
-        display: flex;
-        gap: 0.5rem;
-    }
+    .map-controls { display: flex; gap: 0.5rem; }
 
     .control-btn {
         background: rgba(255, 255, 255, 0.1);
@@ -241,9 +255,9 @@
     }
 
     .map-wrapper {
-        width: 90%;              /* Decreased width */
-        height: 500px;           /* Increased height */
-        margin: 0 auto;          /* Center the map */
+        width: 90%;
+        height: 500px;
+        margin: 0 auto;
         border-radius: 12px;
         overflow: hidden;
         position: relative;
@@ -260,22 +274,14 @@
 
     .map-overlay {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(
-            180deg,
-            rgba(0, 0, 0, 0.2) 0%,
-            transparent 20%
-        );
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, transparent 20%);
         pointer-events: none;
     }
 
     .map-legend {
         position: absolute;
-        bottom: 15px;
-        right: 15px;
+        bottom: 15px; right: 15px;
         background: rgba(0, 0, 0, 0.7);
         padding: 8px;
         border-radius: 6px;
@@ -297,7 +303,8 @@
         font-size: 0.8rem;
     }
 
-    .trend-analysis {
+    /* Chart Grid */
+    .charts-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 2rem;
@@ -318,35 +325,44 @@
 
     .card-header h3 {
         color: #00ffcc;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         margin: 0;
     }
 
     .trend-content {
         padding: 1rem;
-        min-height: 300px;
+        min-height: 280px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
     }
 
-    .trend-image {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        border-radius: 8px;
-        transition: transform 0.3s ease;
+    .trend-content canvas {
+        width: 100% !important;
+        max-height: 260px;
     }
 
-    .trend-image:hover {
-        transform: scale(1.02);
+    .chart-center {
+        justify-content: center;
     }
 
-    .news-section {
-        margin-top: 2rem;
+    .chart-placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #444;
+        font-size: 1rem;
+        pointer-events: none;
     }
 
-    .news-section h2 {
-        color: #00ffcc;
-        margin-bottom: 1.5rem;
-    }
+    .chart-placeholder.hidden { display: none; }
+
+    /* News */
+    .news-section { margin-top: 2rem; }
+    .news-section h2 { color: #00ffcc; margin-bottom: 1.5rem; }
 
     .news-grid {
         display: grid;
@@ -362,14 +378,8 @@
         transition: transform 0.3s ease;
     }
 
-    .news-card:hover {
-        transform: translateY(-5px);
-    }
-
-    .news-header h4 {
-        color: #fff;
-        margin: 0 0 1rem 0;
-    }
+    .news-card:hover { transform: translateY(-5px); }
+    .news-header h4 { color: #fff; margin: 0 0 1rem 0; }
 
     .news-meta {
         color: #888;
@@ -394,11 +404,7 @@
         font-size: 0.8rem;
     }
 
-    .news-description {
-        color: #888;
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-    }
+    .news-description { color: #888; font-size: 0.9rem; margin-bottom: 1rem; }
 
     .read-more {
         color: #00ffcc;
@@ -409,71 +415,340 @@
         transition: all 0.3s ease;
     }
 
-    .read-more:hover {
-        gap: 0.8rem;
-    }
+    .read-more:hover { gap: 0.8rem; }
 
-    @media (max-width: 1200px) {
-        .trend-analysis {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .main-title {
-            font-size: 2rem;
-        }
-    }
+    @media (max-width: 1200px) { .charts-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .main-title { font-size: 2rem; } }
 </style>
 
-<link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<!-- Chart.js v4 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const heatmapFrame = document.getElementById("heatmapFrame");
-        let currentZoom = 1;
+(function () {
+    'use strict';
 
-        document.getElementById("zoomIn").addEventListener("click", () => {
+    // -------------------------------------------------------
+    // Shared chart defaults — dark theme
+    // -------------------------------------------------------
+    Chart.defaults.color = '#888';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+    Chart.defaults.font.family = "'Inter', 'Roboto', sans-serif";
+
+    const PALETTE = {
+        teal:    'rgba(0, 255, 204, 0.85)',
+        tealFill:'rgba(0, 255, 204, 0.15)',
+        blue:    'rgba(52, 152, 219, 0.85)',
+        red:     'rgba(231, 76, 60, 0.85)',
+        orange:  'rgba(230, 126, 34, 0.85)',
+        purple:  'rgba(155, 89, 182, 0.85)',
+        yellow:  'rgba(241, 196, 15, 0.85)',
+        SEVERITY: {
+            critical: 'rgba(231, 76, 60, 0.85)',
+            high:     'rgba(230, 126, 34, 0.85)',
+            medium:   'rgba(241, 196, 15, 0.85)',
+            low:      'rgba(52, 152, 219, 0.85)',
+            info:     'rgba(149, 165, 166, 0.85)',
+        }
+    };
+
+    const chartInstances = {};
+
+    function hideLoader(id) {
+        const el = document.getElementById('placeholder-' + id);
+        if (el) el.classList.add('hidden');
+    }
+
+    function showError(canvasId, message) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        canvas.style.display = 'none';
+        const placeholder = document.getElementById('placeholder-' + canvasId.replace('chart-', ''));
+        if (placeholder) {
+            placeholder.textContent = message || 'No data available';
+            placeholder.style.color = '#555';
+        }
+    }
+
+    // -------------------------------------------------------
+    // KPI card update
+    // -------------------------------------------------------
+    function updateKPI(kpi) {
+        const safe = (v) => (v !== undefined && v !== null) ? v.toLocaleString() : '0';
+        document.getElementById('stat-total-iocs').textContent   = safe(kpi.total_iocs);
+        document.getElementById('stat-recent-iocs').textContent  = safe(kpi.recent_iocs);
+        document.getElementById('stat-high-threats').textContent = safe(kpi.high_threat_actors);
+        document.getElementById('stat-kev-vulns').textContent    = safe(kpi.kev_vulns);
+    }
+
+    function setKPIError() {
+        ['stat-total-iocs', 'stat-recent-iocs', 'stat-high-threats', 'stat-kev-vulns']
+            .forEach(id => { document.getElementById(id).textContent = '0'; });
+    }
+
+    // -------------------------------------------------------
+    // Chart renderers
+    // -------------------------------------------------------
+    function renderTrendChart(data) {
+        if (!data.labels.length) { showError('chart-ioc-trend', 'No trend data yet'); return; }
+        hideLoader('ioc-trend');
+        const ctx = document.getElementById('chart-ioc-trend').getContext('2d');
+        chartInstances['ioc-trend'] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'New IOCs',
+                    data: data.data,
+                    borderColor: PALETTE.teal,
+                    backgroundColor: PALETTE.tealFill,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { maxTicksLimit: 8 } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
+    }
+
+    function renderSeverityChart(data) {
+        if (!data.labels.length) { showError('chart-severity', 'No IOCs in database'); return; }
+        hideLoader('severity');
+        const ctx = document.getElementById('chart-severity').getContext('2d');
+        const colors = data.labels.map(l => PALETTE.SEVERITY[l.toLowerCase()] || PALETTE.blue);
+        chartInstances['severity'] = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.data,
+                    backgroundColor: colors,
+                    borderColor: 'rgba(22,27,34,0.9)',
+                    borderWidth: 3,
+                    hoverOffset: 8,
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '60%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.label}: ${ctx.parsed.toLocaleString()} IOCs`
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderTypeChart(data) {
+        if (!data.labels.length) { showError('chart-ioc-type', 'No IOC types found'); return; }
+        hideLoader('ioc-type');
+        const ctx = document.getElementById('chart-ioc-type').getContext('2d');
+        chartInstances['ioc-type'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Count',
+                    data: data.data,
+                    backgroundColor: PALETTE.blue,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
+    }
+
+    function renderSourceChart(data) {
+        if (!data.labels.length) { showError('chart-source', 'No sources configured'); return; }
+        hideLoader('source');
+        const ctx = document.getElementById('chart-source').getContext('2d');
+        chartInstances['source'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'IOCs',
+                    data: data.data,
+                    backgroundColor: PALETTE.purple,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true, ticks: { precision: 0 } },
+                    y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    function renderActorChart(data) {
+        if (!data.labels.length) { showError('chart-actors', 'No threat actors tracked yet'); return; }
+        hideLoader('actors');
+        const ctx = document.getElementById('chart-actors').getContext('2d');
+        const colors = data.data.map(v => v >= 75 ? PALETTE.red : v >= 50 ? PALETTE.orange : PALETTE.yellow);
+        chartInstances['actors'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Threat Score',
+                    data: data.data,
+                    backgroundColor: colors,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, min: 0, max: 100, ticks: { precision: 0 } },
+                    y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    function renderRiskChart(data) {
+        if (!data.labels.length || data.data.every(v => v === 0)) {
+            showError('chart-risk', 'No correlation reports yet — run rebuild_correlations');
+            return;
+        }
+        hideLoader('risk');
+        const ctx = document.getElementById('chart-risk').getContext('2d');
+        chartInstances['risk'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'IOC Count',
+                    data: data.data,
+                    backgroundColor: [PALETTE.blue, PALETTE.teal, PALETTE.yellow, PALETTE.orange, PALETTE.red],
+                    borderRadius: 4,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => `Risk Score: ${items[0].label}`,
+                            label: (ctx) => ` ${ctx.parsed.y} IOC(s)`
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
+    }
+
+    // -------------------------------------------------------
+    // Main data fetch
+    // -------------------------------------------------------
+    async function loadDashboard() {
+        try {
+            const res = await fetch('/api/v1/intel/analytics/public-stats/');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+
+            updateKPI(json.kpi);
+
+            const c = json.charts;
+            renderTrendChart(c.ioc_daily_trend);
+            renderSeverityChart(c.severity_distribution);
+            renderTypeChart(c.ioc_type_distribution);
+            renderSourceChart(c.source_coverage);
+            renderActorChart(c.top_threat_actors);
+            renderRiskChart(c.risk_distribution);
+
+        } catch (err) {
+            console.error('[CyTrack] Failed to load dashboard stats:', err);
+            setKPIError();
+            ['ioc-trend','severity','ioc-type','source','actors','risk'].forEach(id => {
+                showError('chart-' + id, 'Failed to load data');
+            });
+        }
+    }
+
+    // -------------------------------------------------------
+    // Heatmap controls
+    // -------------------------------------------------------
+    function initMapControls() {
+        const heatmapFrame = document.getElementById('heatmapFrame');
+        if (!heatmapFrame) return;
+        let currentZoom = 1;
+        document.getElementById('zoomIn').addEventListener('click', () => {
             currentZoom = Math.min(currentZoom + 0.1, 1.5);
             heatmapFrame.style.transform = `scale(${currentZoom})`;
         });
-
-        document.getElementById("zoomOut").addEventListener("click", () => {
+        document.getElementById('zoomOut').addEventListener('click', () => {
             currentZoom = Math.max(currentZoom - 0.1, 0.8);
             heatmapFrame.style.transform = `scale(${currentZoom})`;
         });
-
-        document.getElementById("resetView").addEventListener("click", () => {
+        document.getElementById('resetView').addEventListener('click', () => {
             currentZoom = 1;
-            heatmapFrame.style.transform = "scale(1)";
+            heatmapFrame.style.transform = 'scale(1)';
         });
+    }
 
+    // -------------------------------------------------------
+    // Scroll reveal
+    // -------------------------------------------------------
+    function initScrollReveal() {
         const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = "1";
-                        entry.target.style.transform = "translateY(0)";
-                    }
-                });
-            },
-            {
-                threshold: 0.1,
-            },
+            (entries) => { entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; } }); },
+            { threshold: 0.1 }
         );
+        document.querySelectorAll('.stat-card, .news-card, .trend-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            observer.observe(el);
+        });
+    }
 
-        document
-            .querySelectorAll(".stat-card, .news-card, .trend-card")
-            .forEach((el) => {
-                el.style.opacity = "0";
-                el.style.transform = "translateY(20px)";
-                observer.observe(el);
-            });
+    document.addEventListener('DOMContentLoaded', function () {
+        initMapControls();
+        initScrollReveal();
+        loadDashboard();
     });
-
-
+})();
 </script>
 {% endblock %}

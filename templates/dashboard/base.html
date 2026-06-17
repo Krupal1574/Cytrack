@@ -298,6 +298,7 @@
                 margin-bottom: 1.5rem;
                 background: linear-gradient(45deg, #00ffcc, #3498db);
                 -webkit-background-clip: text;
+                background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
 
@@ -659,6 +660,10 @@
 
         <div class="main-content">{% block content %}{% endblock %}</div>
 
+        <!-- Toast Notifications Container -->
+        <div aria-live="polite" aria-atomic="true" style="position: fixed; top: 80px; right: 20px; z-index: 1050;" id="toast-container">
+        </div>
+
         <!-- Footer -->
         <footer class="scroll-reveal">
             <div class="footer-content">
@@ -679,18 +684,70 @@
                 <div class="footer-section">
                     <h3>Connect With Us</h3>
                     <div class="social-links">
-                        <a href="https://github.com/PamJoshi"><i class="fab fa-github"></i></a>
-                        <a href="https://www.linkedin.com/in/pamjoshi/"><i class="fab fa-linkedin"></i></a>
-                        <a href="https://x.com/joshi_param1312"><i class="fab fa-twitter"></i></a>
-                        <a href="https://www.instagram.com/joshi_param1312/"><i class="fab fa-instagram"></i></a>
+                        <a href="https://github.com/Krupal1574"><i class="fab fa-github"></i></a>
+                        <a href="https://www.linkedin.com/in/krupal-prajapati-0910k1574/"><i class="fab fa-linkedin"></i></a>
+                        <a href="mailto:krupalprajapati007@outlook.com"><i class="fas fa-envelope"></i></a>
+                        <a href="https://www.instagram.com/dtmf.flac/#"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
             </div>
         </footer>
 
         <!-- Scripts -->
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        
+        <!-- WebSocket Notifications Script -->
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+                const wsUrl = protocol + window.location.host + '/ws/alerts/';
+                
+                // Only connect if user is authenticated (indicated by existence of a token or session, we assume django handles it)
+                let socket = new WebSocket(wsUrl);
+
+                socket.onmessage = function(e) {
+                    const data = JSON.parse(e.data);
+                    console.log('WS Message:', data);
+                    
+                    if (data.type === 'new_ioc') {
+                        showToast('New Threat Detected!', `Critical IOC found: ${data.ioc.value} (${data.ioc.type})`, 'bg-danger text-white');
+                    } else if (data.type === 'ingestion_status') {
+                        showToast('Ingestion Pipeline', `${data.source} ingestion ${data.status.toLowerCase()}`, 'bg-info text-white');
+                    }
+                };
+
+                socket.onclose = function(e) {
+                    console.error('WebSocket closed unexpectedly');
+                };
+                
+                function showToast(title, body, headerClass) {
+                    const toastHtml = `
+                        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
+                            <div class="toast-header ${headerClass}">
+                                <strong class="mr-auto">${title}</strong>
+                                <small class="text-white-50">Just now</small>
+                                <button type="button" class="ml-2 mb-1 close text-white" data-dismiss="toast" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="toast-body text-dark bg-white">
+                                ${body}
+                            </div>
+                        </div>
+                    `;
+                    const container = document.getElementById('toast-container');
+                    container.insertAdjacentHTML('beforeend', toastHtml);
+                    const toastEl = container.lastElementChild;
+                    $(toastEl).toast('show');
+                    
+                    // Remove after hiding
+                    $(toastEl).on('hidden.bs.toast', function () {
+                        $(this).remove();
+                    });
+                }
+            });
+        </script>
     </body>
 </html>

@@ -86,6 +86,7 @@ LOCAL_APPS = [
     'apps.intelligence.apps.IntelligenceConfig',
     'apps.ingestion.apps.IngestionConfig',
     'apps.alerts.apps.AlertsConfig',
+    'apps.investigation.apps.InvestigationConfig',
     # Legacy dashboard app (migrated in Phase 1, replaced in Phase 4)
     'dashboard.apps.DashboardConfig',
 ]
@@ -201,20 +202,59 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ---------------------------------------------------------------------------
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': REDIS_URL,
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'SOCKET_CONNECT_TIMEOUT': 5,
-            'SOCKET_TIMEOUT': 5,
-            'CONNECTION_POOL_KWARGS': {'max_connections': 20},
-        },
-        'KEY_PREFIX': 'cytrack',
-        'TIMEOUT': 300,  # 5 minutes default TTL
+import sys
+IS_TESTING = 'pytest' in sys.modules
+
+# ---------------------------------------------------------------------------
+# Probe Redis availability (dev only) — fall back to in-memory if unreachable
+# ---------------------------------------------------------------------------
+_REDIS_AVAILABLE = False
+if not IS_TESTING and not IS_PRODUCTION:
+    import socket
+    import urllib.parse
+    try:
+        _parsed = urllib.parse.urlparse(REDIS_URL)
+        _host = _parsed.hostname or 'localhost'
+        _port = _parsed.port or 6379
+        _sock = socket.create_connection((_host, _port), timeout=1)
+        _sock.close()
+        _REDIS_AVAILABLE = True
+    except OSError:
+        import logging as _logging
+        _logging.getLogger('django').warning(
+            '\n'
+            '  ╔══════════════════════════════════════════════════════╗\n'
+            '  ║  Redis is NOT running on %s:%s          ║\n'
+            '  ║  Falling back to in-memory cache (dev only).         ║\n'
+            '  ║  Start Redis:  docker run -d -p 6379:6379 redis:7    ║\n'
+            '  ╚══════════════════════════════════════════════════════╝',
+            _host, _port
+        )
+else:
+    # Tests or production: Redis is assumed available (tests use locmem, prod must have Redis)
+    _REDIS_AVAILABLE = not IS_TESTING  # True in prod, False in tests
+
+if IS_TESTING or (not IS_PRODUCTION and not _REDIS_AVAILABLE):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'SOCKET_CONNECT_TIMEOUT': 5,
+                'SOCKET_TIMEOUT': 5,
+                'CONNECTION_POOL_KWARGS': {'max_connections': 20},
+            },
+            'KEY_PREFIX': 'cytrack',
+            'TIMEOUT': 300,  # 5 minutes default TTL
+        }
+    }
 
 # Session stored in Redis for horizontal scaling
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
@@ -223,16 +263,23 @@ SESSION_CACHE_ALIAS = 'default'
 # ---------------------------------------------------------------------------
 # Django Channels — WebSocket
 # ---------------------------------------------------------------------------
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [REDIS_URL],
-            'capacity': 1500,
-            'expiry': 10,
+if IS_TESTING or (not IS_PRODUCTION and not _REDIS_AVAILABLE):
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
         },
-    },
-}
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [REDIS_URL],
+                'capacity': 1500,
+                'expiry': 10,
+            },
+        },
+    }
 
 # ---------------------------------------------------------------------------
 # Celery — Task Queue

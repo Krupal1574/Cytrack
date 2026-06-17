@@ -35,6 +35,8 @@ class AlertConsumer(AsyncWebsocketConsumer):
 
         # Join the channel group
         await self.channel_layer.group_add(self.group_name, self.channel_name)
+        # Join global alerts group
+        await self.channel_layer.group_add('alerts_global', self.channel_name)
         await self.accept()
 
         logger.info('WebSocket connected: user=%s group=%s', user.email, self.group_name)
@@ -50,6 +52,7 @@ class AlertConsumer(AsyncWebsocketConsumer):
         """Leave channel group on disconnect."""
         if hasattr(self, 'group_name'):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
+            await self.channel_layer.group_discard('alerts_global', self.channel_name)
             logger.info('WebSocket disconnected: group=%s code=%s', self.group_name, close_code)
 
     async def receive(self, text_data):

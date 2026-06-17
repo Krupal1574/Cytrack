@@ -1,19 +1,12 @@
-import matplotlib
-matplotlib.use('Agg')
-
-from django.shortcuts import render
-import requests
 import os
 import datetime
-import numpy as np
-import json
+from django.shortcuts import render
+import requests
 from dotenv import load_dotenv
-from collections import Counter
+from collections import defaultdict
 import folium
 from iso3166 import countries_by_name
 from cyber.settings import BASE_DIR
-from collections import defaultdict
-from collections import Counter, defaultdict
 from folium.plugins import HeatMap
 
 
@@ -151,29 +144,9 @@ def extract_country(text):
 
 
 def dashboard(request):
-    import matplotlib.pyplot as plt
-    from collections import defaultdict
-    import os
-
     news_items = []
     heatmap_filename = None
-    debug_info = {
-        'api_status': None,
-        'errors': [],
-        'heatmap_saved': False,
-        'article_count': 0,
-        'country_article_counts': {}
-    }
-
-    category_count = defaultdict(int)
-    allowed_categories = {
-        'malware', 'phishing', 'ransomware', 'ddos', 'sql injection',
-        'zero-day', 'social engineering', 'man-in-the-middle', 'cross-site scripting',
-        'brute-force', 'spyware', 'rootkit', 'infostealer', 'trojan',
-        'remote access', 'rat', 'obfuscation', 'backdoor', 'credential theft',
-        'supply chain', 'stealer', 'persistence', 'botnet', 'exploit', 'loader'
-    }
-
+    debug_info = {}  # Accumulates debug metadata (not exposed to template)
 
     if not OTX_API_KEY:
         news_items.append({'title': 'Error', 'description': 'OTX API key not found'})
@@ -231,14 +204,7 @@ def dashboard(request):
                     'source': author or 'AlienVault OTX'
                 })
 
-            # Count for bar chart (regardless of heatmap)
-            if created_dt and created_dt >= two_months_ago:
-                for tag in tags_list:
-                    tag_lower = tag.lower()
-                    if tag_lower in allowed_categories:
-                        category_count[tag_lower] += 1
-
-            # Extract country (used only for heatmap)
+            # Extract country for heatmap
             if created_dt and created_dt >= two_months_ago:
                 combined_text = f"{title} {description} {tags}"
                 country = extract_country(combined_text)
@@ -251,9 +217,6 @@ def dashboard(request):
                     'link': link
                 })
                 heatmap_points.append(coords)
-
-        debug_info['article_count'] = len(news_items)
-        debug_info['country_article_counts'] = {country: len(articles) for country, articles in country_articles.items()}
 
         # HEATMAP
         # dark themed map
@@ -386,40 +349,16 @@ def dashboard(request):
             os.makedirs(os.path.dirname(heatmap_path), exist_ok=True)
             m.save(heatmap_path)
 
-        # BAR chart
-        if category_count:
-            fig, ax = plt.subplots(figsize=(12, 6))
-            categories = sorted(category_count.keys())
-            counts = [category_count[c] for c in categories]
-
-            ax.bar(categories, counts, color='steelblue')
-            ax.set_title("Attacks in Last 60 Days")
-            ax.set_ylabel("Number of Incidents")
-            #ax.set_xlabel("Attack Type")
-            ax.set_xticklabels(categories, rotation=45, ha='right')
-            ax.grid(axis='y', linestyle='--', alpha=0.7)
-
-            bar_chart_path = os.path.join(BASE_DIR, 'static', 'plots', 'attack_types_bar_chart.png')
-            os.makedirs(os.path.dirname(bar_chart_path), exist_ok=True)
-            plt.tight_layout()
-            plt.savefig(bar_chart_path)
-            plt.close()
-        else:
-            bar_chart_path = None
-
     except Exception as e:
         import logging
         logger = logging.getLogger(__name__)
         logger.error('Dashboard OTX fetch failed: %s', e, exc_info=True)
         news_items.append({'title': 'Data Unavailable', 'description': 'Threat intelligence is temporarily unavailable.'})
-        bar_chart_path = None
 
     return render(request, 'dashboard/dashboard.html', {
         'newsdata_news': news_items,
         'heatmap_filename': heatmap_filename,
         'heatmap_path': f"/static/plots/{heatmap_filename}" if heatmap_filename else None,
-        'bar_chart': '/static/plots/attack_types_bar_chart.png' if bar_chart_path else None,
-        # debug_info removed from context — do not expose internal state to the browser
     })
 
 

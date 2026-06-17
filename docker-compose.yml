@@ -1,144 +1,75 @@
-# ============================================================
-# CyTrack — Docker Compose (Development)
-# ============================================================
-# Usage:
-#   docker compose up -d          → Start all services
-#   docker compose logs -f web    → Follow web logs
-#   docker compose exec web bash  → Shell into web container
-# ============================================================
-
-version: '3.9'
+version: '3.8'
 
 services:
-
-  # ─── PostgreSQL Database ──────────────────────────────────
   db:
-    image: postgres:16-alpine
-    container_name: cytrack_db
-    restart: unless-stopped
+    image: postgres:15
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_DB: ${DB_NAME:-cytrackdb}
-      POSTGRES_USER: ${DB_USER:-cytrack}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-cytrackpass}
+      - POSTGRES_DB=cytrack
+      - POSTGRES_USER=cytrack_user
+      - POSTGRES_PASSWORD=cytrack_pass
     ports:
       - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-cytrack}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  # ─── Redis (Cache + Message Broker + Channels) ────────────
   redis:
     image: redis:7-alpine
-    container_name: cytrack_redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-    volumes:
-      - redis_data:/data
     ports:
       - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  # ─── Django + Uvicorn (ASGI Web Server) ──────────────────
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: cytrack_web
-    command: web
-    restart: unless-stopped
+    build: .
+    command: daphne -b 0.0.0.0 -p 8000 cyber.asgi:application
     volumes:
       - .:/app
-      - staticfiles_vol:/app/staticfiles
-      - media_vol:/app/media
-    env_file:
-      - .env/.env
-    environment:
-      DB_HOST: db
-      REDIS_URL: redis://redis:6379/0
-      DJANGO_ENV: development
-      DEBUG: "True"
     ports:
       - "8000:8000"
+    environment:
+      - DEBUG=1
+      - DB_NAME=cytrack
+      - DB_USER=cytrack_user
+      - DB_PASSWORD=cytrack_pass
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      # Include API keys here, e.g., OTX_API_KEY, ABUSEIPDB_API_KEY
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health/ping/"]
-      interval: 30s
-      timeout: 10s
-      start_period: 30s
-      retries: 3
+      - db
+      - redis
 
-  # ─── Celery Worker ────────────────────────────────────────
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: cytrack_worker
-    command: worker
-    restart: unless-stopped
+  celery:
+    build: .
+    command: celery -A cyber worker -l info
     volumes:
       - .:/app
-    env_file:
-      - .env/.env
     environment:
-      DB_HOST: db
-      REDIS_URL: redis://redis:6379/0
-      DJANGO_ENV: development
+      - DEBUG=1
+      - DB_NAME=cytrack
+      - DB_USER=cytrack_user
+      - DB_PASSWORD=cytrack_pass
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - db
+      - redis
 
-  # ─── Celery Beat Scheduler ────────────────────────────────
-  beat:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: cytrack_beat
-    command: beat
-    restart: unless-stopped
+  celery-beat:
+    build: .
+    command: celery -A cyber beat -l info
     volumes:
       - .:/app
-    env_file:
-      - .env/.env
     environment:
-      DB_HOST: db
-      REDIS_URL: redis://redis:6379/0
-      DJANGO_ENV: development
+      - DEBUG=1
+      - DB_NAME=cytrack
+      - DB_USER=cytrack_user
+      - DB_PASSWORD=cytrack_pass
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  # ─── Nginx Reverse Proxy ──────────────────────────────────
-  nginx:
-    image: nginx:alpine
-    container_name: cytrack_nginx
-    restart: unless-stopped
-    volumes:
-      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
-      - staticfiles_vol:/app/staticfiles:ro
-      - media_vol:/app/media:ro
-    ports:
-      - "80:80"
-    depends_on:
-      - web
+      - db
+      - redis
 
 volumes:
   postgres_data:
-  redis_data:
-  staticfiles_vol:
-  media_vol:

@@ -1,222 +1,187 @@
-# 🛡️ CyTrack
+# 🛡️ CyTrack – Cyber Threat Intelligence Platform
 
 <p align="center">
-  <b>Monitor, Visualize, and Understand Global Cyber Threats</b>
+  <b>Multi-Source Threat Intelligence, Correlation & Investigation Platform</b>
 </p>
 
 <p align="center">
-  A modern cybersecurity dashboard built with Django that provides threat intelligence, attack visualizations, and global cybercrime insights in one place.
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Django-6.0-success?logo=django" />
-  <img src="https://img.shields.io/badge/Python-3.x-blue?logo=python" />
-  <img src="https://img.shields.io/badge/License-MIT-yellow" />
-  <img src="https://img.shields.io/badge/Status-Active-success" />
+  Built with Django, PostgreSQL, Celery, Redis, Docker, and modern threat intelligence sources.
 </p>
 
 ---
 
-## 📖 Overview
+## Overview
 
-CyTrack helps users explore cybersecurity data through interactive dashboards, visual analytics, and threat intelligence feeds.
+CyTrack is a Cyber Threat Intelligence (CTI) platform designed to collect, enrich, correlate, and visualize threat intelligence from multiple public sources.
 
-Whether you're a student, researcher, security enthusiast, or analyst, CyTrack makes cyber threat information easier to understand and track.
-
----
-
-## ✨ Features
-
-* 🌍 Interactive global cybercrime heatmap
-* 📈 Cyber attack trend analysis
-* 📰 Latest cybersecurity news and intelligence
-* 📊 Data-driven visualizations and charts
-* 🔒 Secure environment variable management
-* 🎨 Clean and responsive user interface
+The platform ingests Indicators of Compromise (IOCs), Vulnerabilities (CVEs), and Threat Intelligence feeds, then builds correlation reports to support investigations and security analysis.
 
 ---
 
-## 📸 Preview
+## Features
 
-Add screenshots here after deployment.
+### Threat Intelligence Sources
 
-```text id="stphf9"
-assets/
-├── home.png
-├── dashboard.png
-└── heatmap.png
-```
+* AlienVault OTX Integration
+* CISA Known Exploited Vulnerabilities (KEV)
+* National Vulnerability Database (NVD)
+* Extensible ingestion framework for additional providers
 
-Example:
+### Intelligence Processing
 
-```md id="tm3bl4"
-![Dashboard](assets/dashboard.png)
-```
+* IOC Normalization
+* IOC Deduplication
+* Threat Scoring Engine
+* Risk Prioritization
+* Correlation Report Generation
+* Source Confidence Analysis
+
+### Investigation Platform
+
+* IOC Investigation APIs
+* Correlation Reports
+* Threat Relationship Discovery
+* Vulnerability Intelligence
+* Threat Actor Tracking
+
+### Dashboard
+
+* Interactive Threat Dashboard
+* Global Threat Heatmap
+* Chart.js Analytics
+* Source Coverage Metrics
+* Vulnerability Statistics
+* Correlation Analytics
+
+### Platform Features
+
+* JWT Authentication
+* Role-Based Access Control (RBAC)
+* Organization Support
+* PostgreSQL Database
+* Docker Deployment
+* Celery Background Tasks
+* Redis Caching & Task Broker
+* WebSocket Alerts
 
 ---
 
-## 🛠️ Technology Stack
+## Current Dataset (Development)
 
-| Technology          | Purpose               |
-| ------------------- | --------------------- |
-| Django              | Backend Framework     |
-| SQLite / PostgreSQL | Database              |
-| Folium              | Interactive Maps      |
-| Requests            | API Integration       |
-| Python Dotenv       | Environment Variables |
-| HTML/CSS/JavaScript | Frontend              |
+Current development environment contains:
+
+* 438+ Indicators of Compromise (IOCs)
+* 6,113 Vulnerabilities
+* 447 Correlation Reports
+* Multiple Threat Intelligence Sources
 
 ---
 
-## 📂 Project Structure
+## Technology Stack
 
-```text id="c47gzj"
+| Component      | Technology              |
+| -------------- | ----------------------- |
+| Backend        | Django 5                |
+| API            | Django REST Framework   |
+| Database       | PostgreSQL              |
+| Authentication | JWT                     |
+| Task Queue     | Celery                  |
+| Cache/Broker   | Redis                   |
+| WebSockets     | Django Channels         |
+| Frontend       | HTML, CSS, JavaScript   |
+| Charts         | Chart.js                |
+| Deployment     | Docker & Docker Compose |
+
+---
+
+## Project Structure
+
+```text
 CyTrack/
-│
-├── cyber/                 # Django project configuration
-├── dashboard/             # Main application
-├── static/                # CSS, images, charts
-├── templates/             # HTML templates
-├── manage.py
-├── requirements.txt
-├── .env.example
-└── README.md
+├── apps/
+│   ├── accounts/
+│   ├── alerts/
+│   ├── ingestion/
+│   ├── intelligence/
+│   └── investigation/
+├── cyber/
+├── dashboard/
+├── docker/
+├── templates/
+├── static/
+└── manage.py
 ```
 
----
+## Quick Start
 
-## 🚀 Getting Started
+### Clone Repository
 
-### 1. Clone the Repository
-
-```bash id="jkluxf"
-git clone https://github.com/Krupal1574/Cytrack.git
-cd Cytrack
+```bash
+git clone https://github.com/Krupal1574/CyTrack.git
+cd CyTrack
 ```
 
-### 2. Create a Virtual Environment
+### Create Environment
 
-```bash id="a5b9ie"
+```bash
 python -m venv venv
-```
-
-Activate it:
-
-**Windows**
-
-```bash id="j76q0z"
 venv\Scripts\activate
 ```
 
-**Linux/macOS**
+### Install Dependencies
 
-```bash id="jmvk5n"
-source venv/bin/activate
-```
-
-### 3. Install Dependencies
-
-```bash id="w3c8z2"
+```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure Environment Variables
+### Configure Environment Variables
 
-Create a `.env` file:
+Create `.env`
 
-```env id="3dxmga"
-OTX_API_KEY=your_api_key_here
+```env
+SECRET_KEY=your_secret_key
+DEBUG=True
+
+OTX_API_KEY=your_otx_key
+ABUSEIPDB_API_KEY=your_abuseipdb_key
+NVD_API_KEY=your_nvd_key
 ```
 
----
+### Run Migrations
 
-### 5. Apply Database Migrations
-
-```bash id="pzk56l"
+```bash
 python manage.py migrate
 ```
 
----
+### Start Development Server
 
-### 6. Run the Development Server
-
-```bash id="v11suh"
+```bash
 python manage.py runserver
 ```
 
-Open your browser:
+---
 
-```text id="u9hhfx"
-http://127.0.0.1:8000
-```
+## Roadmap
+
+* VirusTotal Integration
+* AbuseIPDB Full Integration
+* Threat Actor Profiling
+* Investigation UI
+* IOC Search Engine
+* Correlation Graph Visualization
+* PDF Investigation Reports
+* Multi-Tenant SaaS Deployment
 
 ---
 
-## ⚙️ Configuration
+## Author
 
-### Database
+Krupal Prajapati
 
-SQLite works out of the box.
-
-To use PostgreSQL, update the database configuration inside:
-
-```text id="7d39yk"
-cyber/settings.py
-```
+GitHub: https://github.com/Krupal1574
 
 ---
 
-### Environment Variables
+## License
 
-Never commit secrets to GitHub.
-
-Example:
-
-```env id="i7h5gk"
-OTX_API_KEY=your_api_key_here
-DEBUG=False
-SECRET_KEY=your_secret_key
-```
-
----
-
-## 🌐 Deployment
-
-CyTrack can be deployed on:
-
-* Render (Recommended)
-* Railway
-* PythonAnywhere
-* VPS (Gunicorn + Nginx)
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome.
-
-1. Fork the repository
-2. Create a new branch
-3. Commit your changes
-4. Push your branch
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-## 👨‍💻 Author
-
-**Krupal Prajapati**
-
-* GitHub: https://github.com/Krupal1574
-
----
-
-<p align="center">
-  Built with Django • Cybersecurity • Open Source
-</p>
+MIT License
